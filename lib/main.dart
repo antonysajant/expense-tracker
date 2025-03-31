@@ -124,6 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         setState(() {
                           _selectedDate = pickedDate;
                         });
+                        _showAddExpenseDialog();
                       }
                     },
                   ),
