@@ -14,7 +14,7 @@ class ExpenseTrackerApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
         textTheme: const TextTheme(
-          bodyMedium: TextStyle(fontFamily: 'Boldonse'),
+          bodyMedium: TextStyle(fontFamily: 'Jost'),
         ),
         scaffoldBackgroundColor: Colors.black,
         appBarTheme: const AppBarTheme(
@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(12)),
               title: const Text("Add Expense",
                   style: TextStyle(
-                      fontFamily: 'Boldonse',
+                      fontFamily: 'Jost',
                       color: Colors.white,
                       fontWeight: FontWeight.bold)),
               content: Column(
@@ -76,15 +76,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     controller: _nameController,
                     decoration: const InputDecoration(
                       labelText: "Expense Name",
-                      labelStyle: TextStyle(
-                          fontFamily: 'Boldonse', color: Colors.white70),
+                      labelStyle:
+                          TextStyle(fontFamily: 'Jost', color: Colors.white70),
                       enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.tealAccent)),
                       focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.teal)),
                     ),
                     style: const TextStyle(
-                        fontFamily: 'Boldonse', color: Colors.white),
+                        fontFamily: 'Jost', color: Colors.white),
                   ),
                   const SizedBox(height: 10),
                   TextField(
@@ -93,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: InputDecoration(
                       labelText: "Amount",
                       labelStyle: const TextStyle(
-                          fontFamily: 'Boldonse', color: Colors.white70),
+                          fontFamily: 'Jost', color: Colors.white70),
                       enabledBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.tealAccent)),
                       focusedBorder: const OutlineInputBorder(
@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       errorText: _errorText,
                     ),
                     style: const TextStyle(
-                        fontFamily: 'Boldonse', color: Colors.white),
+                        fontFamily: 'Jost', color: Colors.white),
                     onChanged: (value) {
                       setState(() {
                         if (value.isEmpty || double.tryParse(value) == null) {
@@ -119,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Text(
                           "Date: ${DateFormat.yMMMd().format(_selectedDate!)}",
                           style: const TextStyle(
-                              fontFamily: 'Boldonse', color: Colors.white70),
+                              fontFamily: 'Jost', color: Colors.white70),
                         ),
                       ),
                       IconButton(
@@ -162,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () => Navigator.of(context).pop(),
                   child: const Text("Cancel",
                       style: TextStyle(
-                          fontFamily: 'Boldonse', color: Colors.redAccent)),
+                          fontFamily: 'Jost', color: Colors.redAccent)),
                 ),
                 TextButton(
                   onPressed: () {
@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   child: const Text("Add",
                       style: TextStyle(
-                          fontFamily: 'Boldonse', color: Colors.tealAccent)),
+                          fontFamily: 'Jost', color: Colors.tealAccent)),
                 ),
               ],
             );
@@ -195,8 +195,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text("Expense Tracker",
-              style: TextStyle(
-                  fontFamily: 'Boldonse', fontWeight: FontWeight.bold))),
+              style:
+                  TextStyle(fontFamily: 'Jost', fontWeight: FontWeight.bold))),
       body: Column(
         children: [
           Container(
@@ -211,9 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const Center(
             child: Text("No expenses added yet",
                 style: TextStyle(
-                    fontFamily: 'Boldonse',
-                    color: Colors.white70,
-                    fontSize: 16)),
+                    fontFamily: 'Jost', color: Colors.white70, fontSize: 16)),
           ),
         ],
       ),
