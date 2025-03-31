@@ -13,7 +13,17 @@ class ExpenseTrackerApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blueGrey),
+        scaffoldBackgroundColor: Colors.black,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+        colorScheme:
+            ColorScheme.fromSwatch(primarySwatch: Colors.teal).copyWith(
+          brightness: Brightness.dark,
+          secondary: Colors.tealAccent,
+        ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
           backgroundColor: Colors.teal,
         ),
@@ -40,25 +50,39 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Colors.grey[900],
-          title:
-              const Text("Add Expense", style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.grey[850],
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: const Text("Add Expense",
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                    labelText: "Expense Name",
-                    labelStyle: TextStyle(color: Colors.white)),
+                decoration: InputDecoration(
+                  labelText: "Expense Name",
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.tealAccent)),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.teal)),
+                ),
                 style: const TextStyle(color: Colors.white),
               ),
+              const SizedBox(height: 10),
               TextField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                    labelText: "Amount",
-                    labelStyle: TextStyle(color: Colors.white)),
+                decoration: InputDecoration(
+                  labelText: "Amount",
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.tealAccent)),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.teal)),
+                ),
                 style: const TextStyle(color: Colors.white),
               ),
               const SizedBox(height: 10),
@@ -69,21 +93,38 @@ class _HomeScreenState extends State<HomeScreen> {
                       _selectedDate == null
                           ? "No Date Chosen"
                           : "Date: ${DateFormat.yMMMd().format(_selectedDate!)}",
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white70),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.calendar_today, color: Colors.teal),
+                    icon: const Icon(Icons.calendar_today,
+                        color: Colors.tealAccent),
                     onPressed: () async {
                       DateTime? pickedDate = await showDatePicker(
                         context: context,
                         initialDate: DateTime.now(),
                         firstDate: DateTime(2000),
                         lastDate: DateTime.now(),
+                        builder: (context, child) {
+                          return Theme(
+                            data: ThemeData.dark().copyWith(
+                              colorScheme: ColorScheme.dark(
+                                primary: Colors.teal,
+                                onPrimary: Colors.black,
+                                surface: Colors.grey[900] ?? Colors.black,
+                                onSurface: Colors.white,
+                              ),
+                              dialogBackgroundColor: Colors.black,
+                            ),
+                            child: child!,
+                          );
+                        },
                       );
-                      setState(() {
-                        _selectedDate = pickedDate;
-                      });
+                      if (pickedDate != null) {
+                        setState(() {
+                          _selectedDate = pickedDate;
+                        });
+                      }
                     },
                   ),
                 ],
@@ -93,14 +134,16 @@ class _HomeScreenState extends State<HomeScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+              child: const Text("Cancel",
+                  style: TextStyle(color: Colors.redAccent)),
             ),
             TextButton(
               onPressed: () {
                 // Add logic to save expense
                 Navigator.of(context).pop();
               },
-              child: const Text("Add", style: TextStyle(color: Colors.teal)),
+              child:
+                  const Text("Add", style: TextStyle(color: Colors.tealAccent)),
             ),
           ],
         );
@@ -111,14 +154,16 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Expense Tracker")),
+      appBar: AppBar(
+          title: const Text("Expense Tracker",
+              style: TextStyle(fontWeight: FontWeight.bold))),
       body: const Center(
         child: Text("No expenses added yet",
-            style: TextStyle(color: Colors.white)),
+            style: TextStyle(color: Colors.white70, fontSize: 16)),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddExpenseDialog,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }
