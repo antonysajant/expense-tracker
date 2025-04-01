@@ -263,13 +263,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
+                        interval: expenseLimit.toDouble(), // Set interval to match limit
                         getTitlesWidget: (value, meta) {
-                          if (value == expenseLimit) {
+                          // Always show the limit value
+                          if (value == expenseLimit.toDouble()) {
                             return Text(
                               '\$${value.toInt()}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
+                                fontFamily: 'Jost',
+                              ),
+                            );
+                          }
+                          // Optionally show other values if you want
+                          if (value % expenseLimit == 0) {
+                            return Text(
+                              '\$${value.toInt()}',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 10,
                                 fontFamily: 'Jost',
                               ),
                             );
@@ -364,8 +377,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       controller: _nameController,
                       decoration: const InputDecoration(
                         labelText: "Expense Name",
-                        labelStyle: TextStyle(
-                            color: Colors.white70, fontFamily: 'Jost'),
+                        labelStyle:
+                            TextStyle(color: Colors.white70, fontFamily: 'Jost'),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.tealAccent),
                         ),
@@ -520,6 +533,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _updateLimit(int newLimit) {
+    setState(() {
+      expenseLimit = newLimit;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupedExpenses = _groupedExpenses;
@@ -566,11 +585,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(
                       builder: (context) => SetLimitPage(
                         currentLimit: expenseLimit,
-                        onLimitChanged: (newLimit) {
-                          setState(() {
-                            expenseLimit = newLimit;
-                          });
-                        },
+                        onLimitChanged: _updateLimit,
                       ),
                     ),
                   );
@@ -711,18 +726,16 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         children: <Widget>[
           ListTile(
-            leading:
-                const Icon(Icons.attach_money, color: Colors.tealAccent),
+            leading: const Icon(Icons.attach_money, color: Colors.tealAccent),
             title: const Text('Set Expense Limit',
                 style: TextStyle(color: Colors.white, fontFamily: 'Jost')),
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const SetLimitPage(
-                          currentLimit: 500,
-                          onLimitChanged: null,
-                        )), //dummy data.
+                  builder: (context) => const SetLimitPage(
+                      currentLimit: 500, onLimitChanged: null), //dummy data.
+                ),
               );
             },
           ),
