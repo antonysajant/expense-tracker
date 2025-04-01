@@ -114,6 +114,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _errorText;
 
   Box<Expense> expensesBox = Hive.box<Expense>('expenses');
+  int expenseLimit = 500;
+  int _barChartStartIndex = 0;
+  final int _visibleBars = 5;
 
   Map<String, List<Expense>> get _groupedExpenses {
     final Map<String, List<Expense>> grouped = {};
@@ -148,10 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return sortedDailyTotals;
   }
 
-  int expenseLimit = 500;
-  int _barChartStartIndex = 0;
-  final int _visibleBars = 5;
-
   Widget _buildBarChart() {
     final dailyData = _dailyExpensesData;
     if (dailyData.isEmpty) {
@@ -177,126 +176,161 @@ class _HomeScreenState extends State<HomeScreen> {
     final visibleAmounts = amounts.sublist(adjustedStartIndex,
         (adjustedStartIndex + _visibleBars).clamp(0, amounts.length));
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_left, color: Colors.tealAccent),
-                onPressed: adjustedStartIndex > 0
-                    ? () => setState(() => _barChartStartIndex += _visibleBars)
-                    : null,
-              ),
-              const Text(
-                "Daily Expenses",
-                style: TextStyle(
-                  color: Colors.tealAccent,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Jost',
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 280),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_left, color: Colors.tealAccent),
+                  onPressed: adjustedStartIndex > 0
+                      ? () => setState(() => _barChartStartIndex += _visibleBars)
+                      : null,
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.arrow_right, color: Colors.tealAccent),
-                onPressed: adjustedStartIndex + _visibleBars < dates.length
-                    ? () => setState(() => _barChartStartIndex -= _visibleBars)
-                    : null,
-              ),
-            ],
-          ),
-        ),
-        SizedBox(
-          height: 200,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 16.0),
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: maxAmount * 1.2,
-                minY: 0,
-                barTouchData: BarTouchData(
-                  enabled: true,
-                  touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (group) => Colors.grey[800]!,
-                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      return BarTooltipItem(
-                        '\$${rod.toY.toStringAsFixed(2)}',
-                        const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontFamily: 'Jost',
-                        ),
-                      );
-                    },
+                const Text(
+                  "Daily Expenses",
+                  style: TextStyle(
+                    color: Colors.tealAccent,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Jost',
                   ),
                 ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        final index = value.toInt();
-                        if (index >= 0 && index < visibleDates.length) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              visibleDates[index],
+                IconButton(
+                  icon: const Icon(Icons.arrow_right, color: Colors.tealAccent),
+                  onPressed: adjustedStartIndex + _visibleBars < dates.length
+                      ? () => setState(() => _barChartStartIndex -= _visibleBars)
+                      : null,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 200,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  maxY: maxAmount * 1.2,
+                  minY: 0,
+                  barTouchData: BarTouchData(
+                    enabled: true,
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipColor: (group) => Colors.grey[800]!,
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        return BarTooltipItem(
+                          '\$${rod.toY.toStringAsFixed(2)}',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontFamily: 'Jost',
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          if (index >= 0 && index < visibleDates.length) {
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                visibleDates[index],
+                                style: const TextStyle(
+                                  color: Colors.tealAccent,
+                                  fontSize: 12,
+                                  fontFamily: 'Jost',
+                                ),
+                              ),
+                            );
+                          }
+                          return const Text('');
+                        },
+                        reservedSize: 40,
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          if (value == expenseLimit) {
+                            return Text(
+                              '\$${value.toInt()}',
                               style: const TextStyle(
-                                color: Colors.tealAccent,
+                                color: Colors.white,
                                 fontSize: 12,
                                 fontFamily: 'Jost',
                               ),
-                            ),
-                          );
-                        }
-                        return const Text('');
-                      },
-                      reservedSize: 40,
+                            );
+                          }
+                          return const Text('');
+                        },
+                        reservedSize: 40,
+                      ),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
                     ),
                   ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: false,
+                  gridData: FlGridData(
+                    show: true,
+                    drawHorizontalLine: true,
+                    horizontalInterval: expenseLimit.toDouble(),
+                    getDrawingHorizontalLine: (value) {
+                      if (value == expenseLimit) {
+                        return FlLine(
+                          color: Colors.white.withOpacity(0.5),
+                          strokeWidth: 2,
+                          dashArray: [5, 5],
+                        );
+                      }
+                      return FlLine(
+                        color: Colors.grey.withOpacity(0.1),
+                        strokeWidth: 1,
+                      );
+                    },
+                  ),
+                  borderData: FlBorderData(
+                    show: true,
+                    border: Border.all(
+                      color: Colors.grey.withOpacity(0.3),
                     ),
                   ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
+                  barGroups: List.generate(visibleAmounts.length, (index) {
+                    final isOverLimit = visibleAmounts[index] > expenseLimit;
+                    return BarChartGroupData(
+                      x: index,
+                      barRods: [
+                        BarChartRodData(
+                          toY: visibleAmounts[index],
+                          color: isOverLimit ? Colors.red : Colors.tealAccent,
+                          width: 16,
+                          borderRadius: BorderRadius.circular(4),
+                        )
+                      ],
+                      showingTooltipIndicators: [0],
+                    );
+                  }),
                 ),
-                gridData: FlGridData(
-                  show: false,
-                  drawVerticalLine: false,
-                ),
-                borderData: FlBorderData(
-                  show: false,
-                ),
-                barGroups: List.generate(visibleAmounts.length, (index) {
-                  final isOverLimit = visibleAmounts[index] > expenseLimit;
-                  return BarChartGroupData(
-                    x: index,
-                    barRods: [
-                      BarChartRodData(
-                        toY: visibleAmounts[index],
-                        color: isOverLimit ? Colors.red : Colors.tealAccent,
-                        width: 16,
-                        borderRadius: BorderRadius.circular(4),
-                      )
-                    ],
-                    showingTooltipIndicators: [0],
-                  );
-                }),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -455,8 +489,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () {
                     if (_amountController.text.isEmpty ||
                         double.tryParse(_amountController.text) == null) {
-                      setState(
-                          () => _errorText = "Please enter a valid number");
+                      setState(() => _errorText = "Please enter a valid number");
                       return;
                     }
 
@@ -522,22 +555,25 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 20),
               ListTile(
-                leading: const Icon(Icons.settings, color: Colors.tealAccent),
-                title: const Text('Settings',
+                leading:
+                    const Icon(Icons.attach_money, color: Colors.tealAccent),
+                title: const Text('Set Expense Limit',
                     style: TextStyle(color: Colors.white, fontFamily: 'Jost')),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const SettingsPage()),
-                  ).then((_) {
-                    final homeScreenState =
-                        context.findAncestorStateOfType<_HomeScreenState>();
-                    if (homeScreenState != null) {
-                      homeScreenState.setState(() {});
-                    }
-                  });
+                      builder: (context) => SetLimitPage(
+                        currentLimit: expenseLimit,
+                        onLimitChanged: (newLimit) {
+                          setState(() {
+                            expenseLimit = newLimit;
+                          });
+                        },
+                      ),
+                    ),
+                  );
                 },
               ),
             ],
@@ -546,15 +582,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
+          _buildBarChart(),
           Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: _buildBarChart(),
-            ),
-          ),
-          Expanded(
-            flex: 3,
             child: expensesBox.isEmpty
                 ? const Center(
                     child: Text(
@@ -682,20 +711,19 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         children: <Widget>[
           ListTile(
-            leading: const Icon(Icons.attach_money, color: Colors.tealAccent),
+            leading:
+                const Icon(Icons.attach_money, color: Colors.tealAccent),
             title: const Text('Set Expense Limit',
                 style: TextStyle(color: Colors.white, fontFamily: 'Jost')),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SetLimitPage()),
-              ).then((_) {
-                final homeScreenState =
-                    context.findAncestorStateOfType<_HomeScreenState>();
-                if (homeScreenState != null) {
-                  homeScreenState.setState(() {});
-                }
-              });
+                MaterialPageRoute(
+                    builder: (context) => const SetLimitPage(
+                          currentLimit: 500,
+                          onLimitChanged: null,
+                        )), //dummy data.
+              );
             },
           ),
         ],
@@ -705,7 +733,14 @@ class SettingsPage extends StatelessWidget {
 }
 
 class SetLimitPage extends StatefulWidget {
-  const SetLimitPage({super.key});
+  final int currentLimit;
+  final ValueChanged<int>? onLimitChanged;
+
+  const SetLimitPage({
+    super.key,
+    required this.currentLimit,
+    required this.onLimitChanged,
+  });
 
   @override
   State<SetLimitPage> createState() => _SetLimitPageState();
@@ -716,13 +751,14 @@ class _SetLimitPageState extends State<SetLimitPage> {
   String? _errorText;
 
   @override
+  void initState() {
+    super.initState();
+    _limitController.text =
+        widget.currentLimit.toString(); // Initialize with current limit
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final homeScreenState = context.findAncestorStateOfType<_HomeScreenState>();
-
-    if (homeScreenState != null) {
-      _limitController.text = homeScreenState.expenseLimit.toString();
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -752,7 +788,7 @@ class _SetLimitPageState extends State<SetLimitPage> {
               style: const TextStyle(color: Colors.white, fontFamily: 'Jost'),
               onChanged: (value) {
                 setState(() {
-                  _errorText = (value.isEmpty || double.tryParse(value) == null)
+                  _errorText = (value.isEmpty || int.tryParse(value) == null)
                       ? 'Please enter a valid number'
                       : null;
                 });
@@ -762,18 +798,15 @@ class _SetLimitPageState extends State<SetLimitPage> {
             ElevatedButton(
               onPressed: () {
                 if (_limitController.text.isEmpty ||
-                    double.tryParse(_limitController.text) == null) {
+                    int.tryParse(_limitController.text) == null) {
                   setState(() => _errorText = 'Please enter a valid number');
                   return;
                 }
 
-                if (homeScreenState != null) {
-                  homeScreenState.setState(() {
-                    homeScreenState.expenseLimit =
-                        int.parse(_limitController.text);
-                  });
+                final newLimit = int.parse(_limitController.text);
+                if (widget.onLimitChanged != null) {
+                  widget.onLimitChanged!(newLimit);
                 }
-
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
