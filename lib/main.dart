@@ -460,41 +460,40 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: true,
       ),
       drawer: Drawer(
-        backgroundColor: Colors.grey[850],
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.grey[800],
-              ),
-              child: const Center(
-                child: Text(
-                  'MoneyMate',
-                  style: TextStyle(
-                    color: Colors.tealAccent,
-                    fontSize: 24,
-                    fontFamily: 'Jost',
-                    fontWeight: FontWeight.bold,
-                  ),
+        backgroundColor: Colors.grey[900], // Darker drawer color
+        child: Center(
+          // Center the entire Column vertically and horizontally
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center, // Center vertically
+            mainAxisSize:
+                MainAxisSize.min, // Make the Column take minimum space
+            children: [
+              const Text(
+                'MoneyMate',
+                style: TextStyle(
+                  color: Colors.tealAccent,
+                  fontSize: 24,
+                  fontFamily: 'Jost',
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings, color: Colors.tealAccent),
-              title: const Text('Settings',
-                  style: TextStyle(color: Colors.white, fontFamily: 'Jost')),
-              onTap: () {
-                // Navigate to settings page
-                Navigator.pop(context); // Close the drawer
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsPage()),
-                );
-              },
-            ),
-            // Add more drawer items here if needed
-          ],
+              const SizedBox(height: 20), // Add spacing
+              ListTile(
+                leading: const Icon(Icons.settings, color: Colors.tealAccent),
+                title: const Text('Settings',
+                    style: TextStyle(color: Colors.white, fontFamily: 'Jost')),
+                onTap: () {
+                  // Navigate to settings page
+                  Navigator.pop(context); // Close the drawer
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const SettingsPage()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
       body: expensesBox.isEmpty
