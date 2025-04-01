@@ -1,8 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+class ExpenseAdapter extends TypeAdapter<Expense> {
+  @override
+  final int typeId = 0; // Must be unique
+
+  @override
+  Expense read(BinaryReader reader) {
+    final name = reader.readString();
+    final amount = reader.readDouble();
+    final dateMillis = reader.readInt();
+    final date = DateTime.fromMillisecondsSinceEpoch(dateMillis);
+    return Expense(name: name, amount: amount, date: date);
+  }
+
+  @override
+  void write(BinaryWriter writer, Expense obj) {
+    writer.writeString(obj.name);
+    writer.writeDouble(obj.amount);
+    writer.writeInt(obj.date.millisecondsSinceEpoch);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ExpenseAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class Expense {
+  final String name;
+  final double amount;
+  final DateTime date;
+
+  Expense({required this.name, required this.amount, required this.date});
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(ExpenseAdapter()); // Register the manual adapter
+  await Hive.openBox<Expense>('expenses');
   runApp(const ExpenseTrackerApp());
 }
 
@@ -56,14 +100,6 @@ class ExpenseTrackerApp extends StatelessWidget {
   }
 }
 
-class Expense {
-  final String name;
-  final double amount;
-  final DateTime date;
-
-  Expense({required this.name, required this.amount, required this.date});
-}
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -72,19 +108,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<Expense> _expenses = [];
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   String? _errorText;
 
+  Box<Expense> expensesBox = Hive.box<Expense>('expenses');
+
   // Group expenses by date
   Map<String, List<Expense>> get _groupedExpenses {
     final Map<String, List<Expense>> grouped = {};
 
-    _expenses.sort((a, b) => b.date.compareTo(a.date));
+    final expenses = expensesBox.values.toList(); // Get expenses from Hive
+    expenses.sort((a, b) => b.date.compareTo(a.date));
 
-    for (var expense in _expenses) {
+    for (var expense in expenses) {
       final dateKey = DateFormat.yMMMd().format(expense.date);
       if (!grouped.containsKey(dateKey)) {
         grouped[dateKey] = [];
@@ -98,8 +136,9 @@ class _HomeScreenState extends State<HomeScreen> {
   // Prepare data for bar chart
   Map<String, double> get _dailyExpensesData {
     final dailyTotals = <String, double>{};
+    final expenses = expensesBox.values.toList(); // Get expenses from Hive
 
-    for (var expense in _expenses) {
+    for (var expense in expenses) {
       final dateKey = DateFormat.MMMd().format(expense.date);
       dailyTotals.update(dateKey, (value) => value + expense.amount,
           ifAbsent: () => expense.amount);
@@ -406,7 +445,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _addExpense(Expense expense) {
     setState(() {
-      _expenses.insert(0, expense);
+      expensesBox.add(expense); // Add to Hive box
     });
   }
 
@@ -427,7 +466,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         centerTitle: true,
       ),
-      body: _expenses.isEmpty
+      body: expensesBox.isEmpty
           ? const Center(
               child: Text(
                 "No expenses added yet",
@@ -491,16 +530,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                 background: Container(color: Colors.red),
                                 onDismissed: (direction) {
                                   setState(() {
-                                    _expenses.removeWhere((e) =>
-                                        e.name == expense.name &&
-                                        e.date == expense.date &&
-                                        e.amount == expense.amount);
+                                    final index = expensesBox.values
+                                        .toList()
+                                        .indexOf(expense);
+                                    if (index != -1) {
+                                      expensesBox.deleteAt(index);
+                                    }
                                   });
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                         content: Text('${expense.name} removed',
-                                            style:
-                                                TextStyle(fontFamily: 'Jost'))),
+                                            style: const TextStyle(
+                                                fontFamily: 'Jost'))),
                                   );
                                 },
                                 child: Card(
