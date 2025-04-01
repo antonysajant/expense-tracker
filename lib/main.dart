@@ -148,7 +148,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return sortedDailyTotals;
   }
 
-  int expenseLimit = 500; // Initialize the expense limit
+  int expenseLimit = 500;
+  int _barChartStartIndex = 0;
+  final int _visibleBars = 5;
 
   Widget _buildBarChart() {
     final dailyData = _dailyExpensesData;
@@ -165,93 +167,136 @@ class _HomeScreenState extends State<HomeScreen> {
     final amounts = dailyData.values.toList();
     final maxAmount = amounts.reduce((a, b) => a > b ? a : b);
 
-    return SizedBox(
-      height: 200,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 16.0),
-        child: BarChart(
-          BarChartData(
-            alignment: BarChartAlignment.spaceAround,
-            maxY: maxAmount * 1.2,
-            minY: 0,
-            barTouchData: BarTouchData(
-              enabled: true,
-              touchTooltipData: BarTouchTooltipData(
-                getTooltipColor: (group) => Colors.grey[800]!,
-                getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                  return BarTooltipItem(
-                    '${dates[groupIndex]}\n\$${rod.toY.toStringAsFixed(2)}',
-                    const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontFamily: 'Jost',
-                    ),
-                  );
-                },
+    int adjustedStartIndex = dates.length - _visibleBars - _barChartStartIndex;
+    if (adjustedStartIndex < 0) {
+      adjustedStartIndex = 0;
+    }
+
+    final visibleDates = dates.sublist(adjustedStartIndex,
+        (adjustedStartIndex + _visibleBars).clamp(0, dates.length));
+    final visibleAmounts = amounts.sublist(adjustedStartIndex,
+        (adjustedStartIndex + _visibleBars).clamp(0, amounts.length));
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_left, color: Colors.tealAccent),
+                onPressed: adjustedStartIndex > 0
+                    ? () => setState(() => _barChartStartIndex += _visibleBars)
+                    : null,
               ),
-            ),
-            titlesData: FlTitlesData(
-              show: true,
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  getTitlesWidget: (value, meta) {
-                    final index = value.toInt();
-                    if (index >= 0 && index < dates.length) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          dates[index],
-                          style: const TextStyle(
-                            color: Colors.tealAccent,
-                            fontSize: 10,
-                            fontFamily: 'Jost',
-                          ),
-                        ),
-                      );
-                    }
-                    return const Text('');
-                  },
-                  reservedSize: 40,
+              const Text(
+                "Daily Expenses",
+                style: TextStyle(
+                  color: Colors.tealAccent,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Jost',
                 ),
               ),
-              leftTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: false, // Remove Y-axis titles
-                ),
+              IconButton(
+                icon: const Icon(Icons.arrow_right, color: Colors.tealAccent),
+                onPressed: adjustedStartIndex + _visibleBars < dates.length
+                    ? () => setState(() => _barChartStartIndex -= _visibleBars)
+                    : null,
               ),
-              topTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              rightTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-            ),
-            gridData: FlGridData(
-              show: false, // Remove horizontal lines
-              drawVerticalLine: false,
-            ),
-            borderData: FlBorderData(
-              show: false, // Remove the border
-            ),
-            barGroups: List.generate(amounts.length, (index) {
-              final isOverLimit = amounts[index] > expenseLimit;
-              return BarChartGroupData(
-                x: index,
-                barRods: [
-                  BarChartRodData(
-                    toY: amounts[index],
-                    color: isOverLimit ? Colors.red : Colors.tealAccent,
-                    width: 16,
-                    borderRadius: BorderRadius.circular(4),
-                  )
-                ],
-                showingTooltipIndicators: [0],
-              );
-            }),
+            ],
           ),
         ),
-      ),
+        SizedBox(
+          height: 200,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: maxAmount * 1.2,
+                minY: 0,
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (group) => Colors.grey[800]!,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        '\$${rod.toY.toStringAsFixed(2)}',
+                        const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontFamily: 'Jost',
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index >= 0 && index < visibleDates.length) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              visibleDates[index],
+                              style: const TextStyle(
+                                color: Colors.tealAccent,
+                                fontSize: 12,
+                                fontFamily: 'Jost',
+                              ),
+                            ),
+                          );
+                        }
+                        return const Text('');
+                      },
+                      reservedSize: 40,
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: false,
+                    ),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                ),
+                gridData: FlGridData(
+                  show: false,
+                  drawVerticalLine: false,
+                ),
+                borderData: FlBorderData(
+                  show: false,
+                ),
+                barGroups: List.generate(visibleAmounts.length, (index) {
+                  final isOverLimit = visibleAmounts[index] > expenseLimit;
+                  return BarChartGroupData(
+                    x: index,
+                    barRods: [
+                      BarChartRodData(
+                        toY: visibleAmounts[index],
+                        color: isOverLimit ? Colors.red : Colors.tealAccent,
+                        width: 16,
+                        borderRadius: BorderRadius.circular(4),
+                      )
+                    ],
+                    showingTooltipIndicators: [0],
+                  );
+                }),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -460,13 +505,11 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: true,
       ),
       drawer: Drawer(
-        backgroundColor: Colors.grey[900], // Darker drawer color
+        backgroundColor: Colors.grey[900],
         child: Center(
-          // Center the entire Column vertically and horizontally
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-            mainAxisSize:
-                MainAxisSize.min, // Make the Column take minimum space
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
                 'MoneyMate',
@@ -477,14 +520,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 20), // Add spacing
+              const SizedBox(height: 20),
               ListTile(
                 leading: const Icon(Icons.settings, color: Colors.tealAccent),
                 title: const Text('Settings',
                     style: TextStyle(color: Colors.white, fontFamily: 'Jost')),
                 onTap: () {
-                  // Navigate to settings page
-                  Navigator.pop(context); // Close the drawer
+                  Navigator.pop(context);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -496,38 +538,28 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      body: expensesBox.isEmpty
-          ? const Center(
-              child: Text(
-                "No expenses added yet",
-                style: TextStyle(
-                    color: Colors.white70, fontSize: 16, fontFamily: 'Jost'),
-              ),
-            )
-          : Column(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    "Daily Expenses",
-                    style: TextStyle(
-                      color: Colors.tealAccent,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Jost',
+      body: Column(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: _buildBarChart(),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: expensesBox.isEmpty
+                ? const Center(
+                    child: Text(
+                      "No expenses added yet",
+                      style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 16,
+                          fontFamily: 'Jost'),
                     ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: _buildBarChart(),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: ListView.builder(
+                  )
+                : ListView.builder(
                     itemCount: dateKeys.length,
                     itemBuilder: (context, dateIndex) {
                       final date = dateKeys[dateIndex];
@@ -607,9 +639,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-                ),
-              ],
-            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddExpenseDialog,
         child: const Icon(Icons.add, color: Colors.black),
