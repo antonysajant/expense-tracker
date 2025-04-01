@@ -148,6 +148,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return sortedDailyTotals;
   }
 
+  int expenseLimit = 500; // Initialize the expense limit
+
   Widget _buildBarChart() {
     final dailyData = _dailyExpensesData;
     if (dailyData.isEmpty) {
@@ -181,8 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     '${dates[groupIndex]}\n\$${rod.toY.toStringAsFixed(2)}',
                     const TextStyle(
                       color: Colors.white,
-                      fontSize:
-                          10, // Adjusted font size to make tooltip smaller.
+                      fontSize: 10,
                       fontFamily: 'Jost',
                     ),
                   );
@@ -216,19 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
-                  showTitles: true,
-                  interval: maxAmount > 0 ? (maxAmount / 5) : 1,
-                  getTitlesWidget: (value, meta) {
-                    return Text(
-                      '\$${value.toInt()}',
-                      style: const TextStyle(
-                        color: Colors.tealAccent,
-                        fontSize: 10,
-                        fontFamily: 'Jost',
-                      ),
-                    );
-                  },
-                  reservedSize: 40,
+                  showTitles: false, // Remove Y-axis titles
                 ),
               ),
               topTitles: const AxisTitles(
@@ -239,24 +228,20 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             gridData: FlGridData(
-              show: true,
+              show: false, // Remove horizontal lines
               drawVerticalLine: false,
-              getDrawingHorizontalLine: (value) => FlLine(
-                color: Colors.grey[800]!,
-                strokeWidth: 1,
-              ),
             ),
             borderData: FlBorderData(
-              show: true,
-              border: Border.all(color: Colors.grey[800]!),
+              show: false, // Remove the border
             ),
             barGroups: List.generate(amounts.length, (index) {
+              final isOverLimit = amounts[index] > expenseLimit;
               return BarChartGroupData(
                 x: index,
                 barRods: [
                   BarChartRodData(
                     toY: amounts[index],
-                    color: Colors.tealAccent,
+                    color: isOverLimit ? Colors.red : Colors.tealAccent,
                     width: 16,
                     borderRadius: BorderRadius.circular(4),
                   )
