@@ -117,6 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int expenseLimit = 500;
   int _barChartStartIndex = 0;
   final int _visibleBars = 5;
+  bool _isDeleteMode = false;
 
   Map<String, List<Expense>> get _groupedExpenses {
     final Map<String, List<Expense>> grouped = {};
@@ -263,9 +264,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        interval: expenseLimit.toDouble(), // Set interval to match limit
+                        interval: expenseLimit.toDouble(),
                         getTitlesWidget: (value, meta) {
-                          // Always show the limit value
                           if (value == expenseLimit.toDouble()) {
                             return Text(
                               '\$${value.toInt()}',
@@ -276,7 +276,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             );
                           }
-                          // Optionally show other values if you want
                           if (value % expenseLimit == 0) {
                             return Text(
                               '\$${value.toInt()}',
@@ -539,6 +538,27 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _toggleDeleteMode() {
+    setState(() {
+      _isDeleteMode = !_isDeleteMode;
+    });
+  }
+
+  void _deleteExpense(Expense expense) {
+    setState(() {
+      final index = expensesBox.values.toList().indexOf(expense);
+      if (index != -1) {
+        expensesBox.deleteAt(index);
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${expense.name} removed',
+              style: const TextStyle(fontFamily: 'Jost')),
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupedExpenses = _groupedExpenses;
@@ -652,23 +672,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       DismissDirection.startToEnd;
                                 },
                                 onDismissed: (direction) {
-                                  setState(() {
-                                    final index = expensesBox.values
-                                        .toList()
-                                        .indexOf(expense);
-                                    if (index != -1) {
-                                      expensesBox.deleteAt(index);
-                                    }
-                                  });
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text('${expense.name} removed',
-                                            style: const TextStyle(
-                                                fontFamily: 'Jost'))),
-                                  );
+                                  _deleteExpense(expense);
                                 },
                                 child: Card(
-                                  color: Colors.grey[900],
+                                  color: _isDeleteMode
+                                      ? Colors.grey[800]
+                                      : Colors.grey[900],
                                   margin: const EdgeInsets.symmetric(
                                       horizontal: 10, vertical: 5),
                                   child: ListTile(
@@ -682,15 +691,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                           color: Colors.white70,
                                           fontFamily: 'Jost'),
                                     ),
-                                    trailing: Text(
-                                      "\$${expense.amount.toStringAsFixed(2)}",
-                                      style: const TextStyle(
-                                        color: Colors.tealAccent,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                        fontFamily: 'Jost',
-                                      ),
-                                    ),
+                                    trailing: _isDeleteMode
+                                        ? IconButton(
+                                            icon: const Icon(Icons.delete,
+                                                color: Colors.red),
+                                            onPressed: () =>
+                                                _deleteExpense(expense),
+                                          )
+                                        : Text(
+                                            "\$${expense.amount.toStringAsFixed(2)}",
+                                            style: const TextStyle(
+                                              color: Colors.tealAccent,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                              fontFamily: 'Jost',
+                                            ),
+                                          ),
                                   ),
                                 ),
                               );
@@ -703,9 +719,32 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddExpenseDialog,
-        child: const Icon(Icons.add, color: Colors.black),
+      floatingActionButton: Stack(
+        children: [
+          Positioned(
+            left: 20,
+            bottom: 20,
+            child: FloatingActionButton(
+              heroTag: 'delete',
+              onPressed: _toggleDeleteMode,
+              backgroundColor: _isDeleteMode ? Colors.red : Colors.teal,
+              child: Icon(
+                _isDeleteMode ? Icons.close : Icons.remove,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Positioned(
+            right: 20,
+            bottom: 20,
+            child: FloatingActionButton(
+              heroTag: 'add',
+              onPressed: _showAddExpenseDialog,
+              backgroundColor: Colors.teal,
+              child: const Icon(Icons.add, color: Colors.black),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -734,7 +773,7 @@ class SettingsPage extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const SetLimitPage(
-                      currentLimit: 500, onLimitChanged: null), //dummy data.
+                      currentLimit: 500, onLimitChanged: null),
                 ),
               );
             },
@@ -767,7 +806,7 @@ class _SetLimitPageState extends State<SetLimitPage> {
   void initState() {
     super.initState();
     _limitController.text =
-        widget.currentLimit.toString(); // Initialize with current limit
+        widget.currentLimit.toString();
   }
 
   @override
