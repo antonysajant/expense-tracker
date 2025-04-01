@@ -14,13 +14,36 @@ class ExpenseTrackerApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(fontFamily: 'Jost'),
+          bodyMedium: TextStyle(fontFamily: 'Jost'),
+          bodySmall: TextStyle(fontFamily: 'Jost'),
+          displayLarge: TextStyle(fontFamily: 'Jost'),
+          displayMedium: TextStyle(fontFamily: 'Jost'),
+          displaySmall: TextStyle(fontFamily: 'Jost'),
+          headlineLarge: TextStyle(fontFamily: 'Jost'),
+          headlineMedium: TextStyle(fontFamily: 'Jost'),
+          headlineSmall: TextStyle(fontFamily: 'Jost'),
+          labelLarge: TextStyle(fontFamily: 'Jost'),
+          labelMedium: TextStyle(fontFamily: 'Jost'),
+          labelSmall: TextStyle(fontFamily: 'Jost'),
+          titleLarge: TextStyle(fontFamily: 'Jost'),
+          titleMedium: TextStyle(fontFamily: 'Jost'),
+          titleSmall: TextStyle(fontFamily: 'Jost'),
+        ),
         scaffoldBackgroundColor: Colors.black,
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.tealAccent,
           foregroundColor: Colors.black,
           elevation: 0,
+          titleTextStyle: TextStyle(
+            fontFamily: 'Jost',
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
         ),
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.teal).copyWith(
+        colorScheme:
+            ColorScheme.fromSwatch(primarySwatch: Colors.teal).copyWith(
           brightness: Brightness.dark,
           secondary: Colors.tealAccent,
         ),
@@ -92,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return const Center(
         child: Text(
           "Add expenses to see the chart",
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70, fontFamily: 'Jost'),
         ),
       );
     }
@@ -115,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 return BarTooltipItem(
                   '${dates[groupIndex]}\n\$${rod.toY.toStringAsFixed(2)}',
-                  const TextStyle(color: Colors.white),
+                  const TextStyle(color: Colors.white, fontFamily: 'Jost'),
                 );
               },
             ),
@@ -135,6 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: const TextStyle(
                           color: Colors.tealAccent,
                           fontSize: 10,
+                          fontFamily: 'Jost',
                         ),
                       ),
                     );
@@ -154,6 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: const TextStyle(
                       color: Colors.tealAccent,
                       fontSize: 10,
+                      fontFamily: 'Jost',
                     ),
                   );
                 },
@@ -211,10 +236,14 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context, setState) {
             return AlertDialog(
               backgroundColor: Colors.grey[850],
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               title: const Text(
                 "Add Expense",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Jost'),
               ),
               content: SingleChildScrollView(
                 child: Column(
@@ -224,7 +253,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       controller: _nameController,
                       decoration: const InputDecoration(
                         labelText: "Expense Name",
-                        labelStyle: TextStyle(color: Colors.white70),
+                        labelStyle: TextStyle(
+                            color: Colors.white70, fontFamily: 'Jost'),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.tealAccent),
                         ),
@@ -232,7 +262,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderSide: BorderSide(color: Colors.teal),
                         ),
                       ),
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(
+                          color: Colors.white, fontFamily: 'Jost'),
                     ),
                     const SizedBox(height: 10),
                     TextField(
@@ -240,7 +271,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: "Amount",
-                        labelStyle: const TextStyle(color: Colors.white70),
+                        labelStyle: const TextStyle(
+                            color: Colors.white70, fontFamily: 'Jost'),
                         enabledBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.tealAccent),
                         ),
@@ -249,12 +281,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         errorText: _errorText,
                       ),
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(
+                          color: Colors.white, fontFamily: 'Jost'),
                       onChanged: (value) {
                         setState(() {
-                          _errorText = (value.isEmpty || double.tryParse(value) == null)
-                              ? "Please enter a valid number"
-                              : null;
+                          _errorText =
+                              (value.isEmpty || double.tryParse(value) == null)
+                                  ? "Please enter a valid number"
+                                  : null;
                         });
                       },
                     ),
@@ -264,11 +298,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: Text(
                             "Date: ${DateFormat.yMMMd().format(_selectedDate)}",
-                            style: const TextStyle(color: Colors.white70),
+                            style: const TextStyle(
+                                color: Colors.white70, fontFamily: 'Jost'),
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.calendar_today, color: Colors.tealAccent),
+                          icon: const Icon(Icons.calendar_today,
+                              color: Colors.tealAccent),
                           onPressed: () async {
                             final pickedDate = await showDatePicker(
                               context: context,
@@ -278,13 +314,44 @@ class _HomeScreenState extends State<HomeScreen> {
                               builder: (context, child) {
                                 return Theme(
                                   data: ThemeData.dark().copyWith(
+                                    textTheme: const TextTheme(
+                                      bodyLarge: TextStyle(fontFamily: 'Jost'),
+                                      bodyMedium: TextStyle(fontFamily: 'Jost'),
+                                      bodySmall: TextStyle(fontFamily: 'Jost'),
+                                      displayLarge:
+                                          TextStyle(fontFamily: 'Jost'),
+                                      displayMedium:
+                                          TextStyle(fontFamily: 'Jost'),
+                                      displaySmall:
+                                          TextStyle(fontFamily: 'Jost'),
+                                      headlineLarge:
+                                          TextStyle(fontFamily: 'Jost'),
+                                      headlineMedium:
+                                          TextStyle(fontFamily: 'Jost'),
+                                      headlineSmall:
+                                          TextStyle(fontFamily: 'Jost'),
+                                      labelLarge: TextStyle(fontFamily: 'Jost'),
+                                      labelMedium:
+                                          TextStyle(fontFamily: 'Jost'),
+                                      labelSmall: TextStyle(fontFamily: 'Jost'),
+                                      titleLarge: TextStyle(fontFamily: 'Jost'),
+                                      titleMedium:
+                                          TextStyle(fontFamily: 'Jost'),
+                                      titleSmall: TextStyle(fontFamily: 'Jost'),
+                                    ),
                                     colorScheme: ColorScheme.dark(
                                       primary: Colors.teal,
                                       onPrimary: Colors.black,
                                       surface: Colors.grey[900]!,
                                       onSurface: Colors.white,
                                     ),
-                                    dialogTheme: const DialogThemeData(backgroundColor: Colors.black),
+                                    dialogTheme: const DialogThemeData(
+                                      backgroundColor: Colors.black,
+                                      titleTextStyle:
+                                          TextStyle(fontFamily: 'Jost'),
+                                      contentTextStyle:
+                                          TextStyle(fontFamily: 'Jost'),
+                                    ),
                                   ),
                                   child: child!,
                                 );
@@ -303,12 +370,16 @@ class _HomeScreenState extends State<HomeScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("Cancel", style: TextStyle(color: Colors.redAccent)),
+                  child: const Text("Cancel",
+                      style: TextStyle(
+                          color: Colors.redAccent, fontFamily: 'Jost')),
                 ),
                 TextButton(
                   onPressed: () {
-                    if (_amountController.text.isEmpty || double.tryParse(_amountController.text) == null) {
-                      setState(() => _errorText = "Please enter a valid number");
+                    if (_amountController.text.isEmpty ||
+                        double.tryParse(_amountController.text) == null) {
+                      setState(
+                          () => _errorText = "Please enter a valid number");
                       return;
                     }
 
@@ -321,7 +392,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.of(context).pop();
                     _addExpense(newExpense);
                   },
-                  child: const Text("Add", style: TextStyle(color: Colors.tealAccent)),
+                  child: const Text("Add",
+                      style: TextStyle(
+                          color: Colors.tealAccent, fontFamily: 'Jost')),
                 ),
               ],
             );
@@ -349,6 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 24,
+            fontFamily: 'Jost',
           ),
         ),
         centerTitle: true,
@@ -357,7 +431,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ? const Center(
               child: Text(
                 "No expenses added yet",
-                style: TextStyle(color: Colors.white70, fontSize: 16),
+                style: TextStyle(
+                    color: Colors.white70, fontSize: 16, fontFamily: 'Jost'),
               ),
             )
           : Column(
@@ -370,6 +445,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.tealAccent,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      fontFamily: 'Jost',
                     ),
                   ),
                 ),
@@ -399,6 +475,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.tealAccent,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
+                                fontFamily: 'Jost',
                               ),
                             ),
                           ),
@@ -409,7 +486,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             itemBuilder: (context, expenseIndex) {
                               final expense = expensesForDate[expenseIndex];
                               return Dismissible(
-                                key: Key('${expense.name}_${expense.date.millisecondsSinceEpoch}'),
+                                key: Key(
+                                    '${expense.name}_${expense.date.millisecondsSinceEpoch}'),
                                 background: Container(color: Colors.red),
                                 onDismissed: (direction) {
                                   setState(() {
@@ -419,23 +497,33 @@ class _HomeScreenState extends State<HomeScreen> {
                                         e.amount == expense.amount);
                                   });
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('${expense.name} removed')),
+                                    SnackBar(
+                                        content: Text('${expense.name} removed',
+                                            style:
+                                                TextStyle(fontFamily: 'Jost'))),
                                   );
                                 },
                                 child: Card(
                                   color: Colors.grey[900],
-                                  margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
                                   child: ListTile(
-                                    title: Text(expense.name, style: const TextStyle(color: Colors.white)),
+                                    title: Text(expense.name,
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontFamily: 'Jost')),
                                     subtitle: Text(
                                       DateFormat.jm().format(expense.date),
-                                      style: const TextStyle(color: Colors.white70),
+                                      style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontFamily: 'Jost'),
                                     ),
                                     trailing: Text(
                                       "\$${expense.amount.toStringAsFixed(2)}",
                                       style: const TextStyle(
                                         color: Colors.tealAccent,
                                         fontWeight: FontWeight.bold,
+                                        fontFamily: 'Jost',
                                       ),
                                     ),
                                   ),
