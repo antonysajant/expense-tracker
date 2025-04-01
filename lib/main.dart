@@ -5,7 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 class ExpenseAdapter extends TypeAdapter<Expense> {
   @override
-  final int typeId = 0; // Must be unique
+  final int typeId = 0;
 
   @override
   Expense read(BinaryReader reader) {
@@ -45,7 +45,7 @@ class Expense {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  Hive.registerAdapter(ExpenseAdapter()); // Register the manual adapter
+  Hive.registerAdapter(ExpenseAdapter());
   await Hive.openBox<Expense>('expenses');
   runApp(const ExpenseTrackerApp());
 }
@@ -77,8 +77,8 @@ class ExpenseTrackerApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: Colors.black,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.tealAccent,
-          foregroundColor: Colors.black,
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.tealAccent,
           elevation: 0,
           titleTextStyle: TextStyle(
             fontFamily: 'Jost',
@@ -115,11 +115,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Box<Expense> expensesBox = Hive.box<Expense>('expenses');
 
-  // Group expenses by date
   Map<String, List<Expense>> get _groupedExpenses {
     final Map<String, List<Expense>> grouped = {};
-
-    final expenses = expensesBox.values.toList(); // Get expenses from Hive
+    final expenses = expensesBox.values.toList();
     expenses.sort((a, b) => b.date.compareTo(a.date));
 
     for (var expense in expenses) {
@@ -129,14 +127,12 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       grouped[dateKey]!.add(expense);
     }
-
     return grouped;
   }
 
-  // Prepare data for bar chart
   Map<String, double> get _dailyExpensesData {
     final dailyTotals = <String, double>{};
-    final expenses = expensesBox.values.toList(); // Get expenses from Hive
+    final expenses = expensesBox.values.toList();
 
     for (var expense in expenses) {
       final dateKey = DateFormat.MMMd().format(expense.date);
@@ -144,10 +140,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ifAbsent: () => expense.amount);
     }
 
-    return dailyTotals;
+    final sortedDailyTotals = Map.fromEntries(dailyTotals.entries.toList()
+      ..sort((e1, e2) => DateFormat.MMMd()
+          .parse(e1.key)
+          .compareTo(DateFormat.MMMd().parse(e2.key))));
+
+    return sortedDailyTotals;
   }
 
-  // Build the bar chart using fl_chart
   Widget _buildBarChart() {
     final dailyData = _dailyExpensesData;
     if (dailyData.isEmpty) {
@@ -165,98 +165,106 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return SizedBox(
       height: 200,
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          maxY: maxAmount * 1.2,
-          minY: 0,
-          barTouchData: BarTouchData(
-            enabled: true,
-            touchTooltipData: BarTouchTooltipData(
-              getTooltipColor: (group) => Colors.grey[800]!,
-              getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                return BarTooltipItem(
-                  '${dates[groupIndex]}\n\$${rod.toY.toStringAsFixed(2)}',
-                  const TextStyle(color: Colors.white, fontFamily: 'Jost'),
-                );
-              },
-            ),
-          ),
-          titlesData: FlTitlesData(
-            show: true,
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  final index = value.toInt();
-                  if (index >= 0 && index < dates.length) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        dates[index],
-                        style: const TextStyle(
-                          color: Colors.tealAccent,
-                          fontSize: 10,
-                          fontFamily: 'Jost',
-                        ),
-                      ),
-                    );
-                  }
-                  return const Text('');
-                },
-                reservedSize: 40,
-              ),
-            ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                interval: maxAmount > 0 ? (maxAmount / 5) : 1,
-                getTitlesWidget: (value, meta) {
-                  return Text(
-                    '\$${value.toInt()}',
-                    style: const TextStyle(
-                      color: Colors.tealAccent,
-                      fontSize: 10,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 16.0),
+        child: BarChart(
+          BarChartData(
+            alignment: BarChartAlignment.spaceAround,
+            maxY: maxAmount * 1.2,
+            minY: 0,
+            barTouchData: BarTouchData(
+              enabled: true,
+              touchTooltipData: BarTouchTooltipData(
+                getTooltipColor: (group) => Colors.grey[800]!,
+                getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                  return BarTooltipItem(
+                    '${dates[groupIndex]}\n\$${rod.toY.toStringAsFixed(2)}',
+                    const TextStyle(
+                      color: Colors.white,
+                      fontSize:
+                          10, // Adjusted font size to make tooltip smaller.
                       fontFamily: 'Jost',
                     ),
                   );
                 },
-                reservedSize: 40,
               ),
             ),
-            topTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
+            titlesData: FlTitlesData(
+              show: true,
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (value, meta) {
+                    final index = value.toInt();
+                    if (index >= 0 && index < dates.length) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          dates[index],
+                          style: const TextStyle(
+                            color: Colors.tealAccent,
+                            fontSize: 10,
+                            fontFamily: 'Jost',
+                          ),
+                        ),
+                      );
+                    }
+                    return const Text('');
+                  },
+                  reservedSize: 40,
+                ),
+              ),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: maxAmount > 0 ? (maxAmount / 5) : 1,
+                  getTitlesWidget: (value, meta) {
+                    return Text(
+                      '\$${value.toInt()}',
+                      style: const TextStyle(
+                        color: Colors.tealAccent,
+                        fontSize: 10,
+                        fontFamily: 'Jost',
+                      ),
+                    );
+                  },
+                  reservedSize: 40,
+                ),
+              ),
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
             ),
-            rightTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
+            gridData: FlGridData(
+              show: true,
+              drawVerticalLine: false,
+              getDrawingHorizontalLine: (value) => FlLine(
+                color: Colors.grey[800]!,
+                strokeWidth: 1,
+              ),
             ),
-          ),
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            getDrawingHorizontalLine: (value) => FlLine(
-              color: Colors.grey[800]!,
-              strokeWidth: 1,
+            borderData: FlBorderData(
+              show: true,
+              border: Border.all(color: Colors.grey[800]!),
             ),
+            barGroups: List.generate(amounts.length, (index) {
+              return BarChartGroupData(
+                x: index,
+                barRods: [
+                  BarChartRodData(
+                    toY: amounts[index],
+                    color: Colors.tealAccent,
+                    width: 16,
+                    borderRadius: BorderRadius.circular(4),
+                  )
+                ],
+                showingTooltipIndicators: [0],
+              );
+            }),
           ),
-          borderData: FlBorderData(
-            show: true,
-            border: Border.all(color: Colors.grey[800]!),
-          ),
-          barGroups: List.generate(amounts.length, (index) {
-            return BarChartGroupData(
-              x: index,
-              barRods: [
-                BarChartRodData(
-                  toY: amounts[index],
-                  color: Colors.tealAccent,
-                  width: 16,
-                  borderRadius: BorderRadius.circular(4),
-                )
-              ],
-              showingTooltipIndicators: [0],
-            );
-          }),
         ),
       ),
     );
@@ -445,7 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _addExpense(Expense expense) {
     setState(() {
-      expensesBox.add(expense); // Add to Hive box
+      expensesBox.add(expense);
     });
   }
 
@@ -564,6 +572,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       style: const TextStyle(
                                         color: Colors.tealAccent,
                                         fontWeight: FontWeight.bold,
+                                        fontSize: 16,
                                         fontFamily: 'Jost',
                                       ),
                                     ),
