@@ -531,7 +531,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     context,
                     MaterialPageRoute(
                         builder: (context) => const SettingsPage()),
-                  );
+                  ).then((_) {
+                    final homeScreenState =
+                        context.findAncestorStateOfType<_HomeScreenState>();
+                    if (homeScreenState != null) {
+                      homeScreenState.setState(() {});
+                    }
+                  });
                 },
               ),
             ],
@@ -589,7 +595,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               return Dismissible(
                                 key: Key(
                                     '${expense.name}_${expense.date.millisecondsSinceEpoch}'),
-                                background: Container(color: Colors.red),
+                                background: Container(
+                                  color: Colors.red,
+                                  alignment: Alignment.centerLeft,
+                                  padding: const EdgeInsets.only(left: 20.0),
+                                  child: const Icon(Icons.delete,
+                                      color: Colors.white),
+                                ),
+                                direction: DismissDirection.startToEnd,
+                                confirmDismiss: (direction) async {
+                                  return direction ==
+                                      DismissDirection.startToEnd;
+                                },
                                 onDismissed: (direction) {
                                   setState(() {
                                     final index = expensesBox.values
@@ -662,9 +679,114 @@ class SettingsPage extends StatelessWidget {
           style: TextStyle(fontFamily: 'Jost'),
         ),
       ),
-      body: const Center(
-        child: Text('Settings Page Content',
-            style: TextStyle(color: Colors.white, fontFamily: 'Jost')),
+      body: ListView(
+        children: <Widget>[
+          ListTile(
+            leading: const Icon(Icons.attach_money, color: Colors.tealAccent),
+            title: const Text('Set Expense Limit',
+                style: TextStyle(color: Colors.white, fontFamily: 'Jost')),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SetLimitPage()),
+              ).then((_) {
+                final homeScreenState =
+                    context.findAncestorStateOfType<_HomeScreenState>();
+                if (homeScreenState != null) {
+                  homeScreenState.setState(() {});
+                }
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SetLimitPage extends StatefulWidget {
+  const SetLimitPage({super.key});
+
+  @override
+  State<SetLimitPage> createState() => _SetLimitPageState();
+}
+
+class _SetLimitPageState extends State<SetLimitPage> {
+  final TextEditingController _limitController = TextEditingController();
+  String? _errorText;
+
+  @override
+  Widget build(BuildContext context) {
+    final homeScreenState = context.findAncestorStateOfType<_HomeScreenState>();
+
+    if (homeScreenState != null) {
+      _limitController.text = homeScreenState.expenseLimit.toString();
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Set Expense Limit',
+          style: TextStyle(fontFamily: 'Jost'),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _limitController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Expense Limit',
+                labelStyle:
+                    const TextStyle(color: Colors.white70, fontFamily: 'Jost'),
+                enabledBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.tealAccent),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.teal),
+                ),
+                errorText: _errorText,
+              ),
+              style: const TextStyle(color: Colors.white, fontFamily: 'Jost'),
+              onChanged: (value) {
+                setState(() {
+                  _errorText = (value.isEmpty || double.tryParse(value) == null)
+                      ? 'Please enter a valid number'
+                      : null;
+                });
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                if (_limitController.text.isEmpty ||
+                    double.tryParse(_limitController.text) == null) {
+                  setState(() => _errorText = 'Please enter a valid number');
+                  return;
+                }
+
+                if (homeScreenState != null) {
+                  homeScreenState.setState(() {
+                    homeScreenState.expenseLimit =
+                        int.parse(_limitController.text);
+                  });
+                }
+
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                foregroundColor: Colors.black,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                textStyle: const TextStyle(fontSize: 18, fontFamily: 'Jost'),
+              ),
+              child: const Text('Save Limit'),
+            ),
+          ],
+        ),
       ),
     );
   }
