@@ -119,6 +119,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final int _visibleBars = 5;
   bool _isDeleteMode = false;
 
+  // Calculate horizontal margin for buttons
+  final double _buttonHorizontalMargin = 20.0;
+
   Map<String, List<Expense>> get _groupedExpenses {
     final Map<String, List<Expense>> grouped = {};
     final expenses = expensesBox.values.toList();
@@ -148,7 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ..sort((e1, e2) => DateFormat.MMMd()
           .parse(e1.key)
           .compareTo(DateFormat.MMMd().parse(e2.key))));
-
     return sortedDailyTotals;
   }
 
@@ -166,7 +168,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final dates = dailyData.keys.toList();
     final amounts = dailyData.values.toList();
     final maxAmount = amounts.reduce((a, b) => a > b ? a : b);
-
     int adjustedStartIndex = dates.length - _visibleBars - _barChartStartIndex;
     if (adjustedStartIndex < 0) {
       adjustedStartIndex = 0;
@@ -176,7 +177,6 @@ class _HomeScreenState extends State<HomeScreen> {
         (adjustedStartIndex + _visibleBars).clamp(0, dates.length));
     final visibleAmounts = amounts.sublist(adjustedStartIndex,
         (adjustedStartIndex + _visibleBars).clamp(0, amounts.length));
-
     return ConstrainedBox(
       constraints: const BoxConstraints(maxHeight: 280),
       child: Column(
@@ -190,7 +190,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 IconButton(
                   icon: const Icon(Icons.arrow_left, color: Colors.tealAccent),
                   onPressed: adjustedStartIndex > 0
-                      ? () => setState(() => _barChartStartIndex += _visibleBars)
+                      ? () =>
+                          setState(() => _barChartStartIndex += _visibleBars)
                       : null,
                 ),
                 const Text(
@@ -205,7 +206,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 IconButton(
                   icon: const Icon(Icons.arrow_right, color: Colors.tealAccent),
                   onPressed: adjustedStartIndex + _visibleBars < dates.length
-                      ? () => setState(() => _barChartStartIndex -= _visibleBars)
+                      ? () =>
+                          setState(() => _barChartStartIndex -= _visibleBars)
                       : null,
                 ),
               ],
@@ -351,7 +353,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _amountController.clear();
     _selectedDate = DateTime.now();
     _errorText = null;
-
     showDialog(
       context: context,
       builder: (context) {
@@ -376,8 +377,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       controller: _nameController,
                       decoration: const InputDecoration(
                         labelText: "Expense Name",
-                        labelStyle:
-                            TextStyle(color: Colors.white70, fontFamily: 'Jost'),
+                        labelStyle: TextStyle(
+                            color: Colors.white70, fontFamily: 'Jost'),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.tealAccent),
                         ),
@@ -501,7 +502,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () {
                     if (_amountController.text.isEmpty ||
                         double.tryParse(_amountController.text) == null) {
-                      setState(() => _errorText = "Please enter a valid number");
+                      setState(
+                          () => _errorText = "Please enter a valid number");
                       return;
                     }
 
@@ -510,7 +512,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       amount: double.parse(_amountController.text),
                       date: _selectedDate,
                     );
-
                     Navigator.of(context).pop();
                     _addExpense(newExpense);
                   },
@@ -719,33 +720,36 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: Stack(
-        children: [
-          Positioned(
-            left: 20,
-            bottom: 20,
-            child: FloatingActionButton(
-              heroTag: 'delete',
-              onPressed: _toggleDeleteMode,
-              backgroundColor: _isDeleteMode ? Colors.red : Colors.teal,
-              child: Icon(
-                _isDeleteMode ? Icons.close : Icons.remove,
-                color: Colors.black,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 20.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(left: _buttonHorizontalMargin),
+              child: FloatingActionButton(
+                heroTag: 'delete',
+                onPressed: _toggleDeleteMode,
+                backgroundColor: _isDeleteMode ? Colors.red : Colors.teal,
+                child: Icon(
+                  _isDeleteMode ? Icons.close : Icons.remove,
+                  color: Colors.black,
+                ),
               ),
             ),
-          ),
-          Positioned(
-            right: 20,
-            bottom: 20,
-            child: FloatingActionButton(
-              heroTag: 'add',
-              onPressed: _showAddExpenseDialog,
-              backgroundColor: Colors.teal,
-              child: const Icon(Icons.add, color: Colors.black),
+            Padding(
+              padding: EdgeInsets.only(right: _buttonHorizontalMargin),
+              child: FloatingActionButton(
+                heroTag: 'add',
+                onPressed: _showAddExpenseDialog,
+                backgroundColor: Colors.teal,
+                child: const Icon(Icons.add, color: Colors.black),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
@@ -787,13 +791,11 @@ class SettingsPage extends StatelessWidget {
 class SetLimitPage extends StatefulWidget {
   final int currentLimit;
   final ValueChanged<int>? onLimitChanged;
-
   const SetLimitPage({
     super.key,
     required this.currentLimit,
     required this.onLimitChanged,
   });
-
   @override
   State<SetLimitPage> createState() => _SetLimitPageState();
 }
@@ -801,12 +803,10 @@ class SetLimitPage extends StatefulWidget {
 class _SetLimitPageState extends State<SetLimitPage> {
   final TextEditingController _limitController = TextEditingController();
   String? _errorText;
-
   @override
   void initState() {
     super.initState();
-    _limitController.text =
-        widget.currentLimit.toString();
+    _limitController.text = widget.currentLimit.toString();
   }
 
   @override
