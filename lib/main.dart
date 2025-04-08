@@ -228,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       getTooltipColor: (group) => Colors.grey[800]!,
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         return BarTooltipItem(
-                          '\$${rod.toY.toStringAsFixed(2)}',
+                          '₹${rod.toY.toStringAsFixed(2)}', // Changed '$' to '₹'
                           const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
@@ -270,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         getTitlesWidget: (value, meta) {
                           if (value == expenseLimit.toDouble()) {
                             return Text(
-                              '\$${value.toInt()}',
+                              '₹${value.toInt()}', // Changed '$' to '₹'
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -280,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           }
                           if (value % expenseLimit == 0) {
                             return Text(
-                              '\$${value.toInt()}',
+                              '₹${value.toInt()}', // Changed '$' to '₹'
                               style: const TextStyle(
                                 color: Colors.white70,
                                 fontSize: 10,
@@ -700,7 +700,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 _deleteExpense(expense),
                                           )
                                         : Text(
-                                            "\$${expense.amount.toStringAsFixed(2)}",
+                                            "₹${expense.amount.toStringAsFixed(2)}", // Changed '$' to '₹'
                                             style: const TextStyle(
                                               color: Colors.tealAccent,
                                               fontWeight: FontWeight.bold,
