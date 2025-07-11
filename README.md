@@ -1,7 +1,6 @@
 # expense_tracker
 
-A new Flutter project.
-
+IIIE Micro Project S4 CSBS 2027
 ## Getting Started
 
 This project is a starting point for a Flutter application.
